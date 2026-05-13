@@ -13,3 +13,24 @@ variable "secondary_cidr" {
 variable "availability_zones" {
   type = list(string)
 }
+
+variable "public_subnets" {
+  type = map(object({
+    cidr = string
+    az   = string
+  }))
+}
+
+variable "private_subnets" {
+  type = map(object({
+    cidr = string
+    az   = string
+  }))
+}
+
+variable "pod_subnets" {
+  type = map(object({
+    cidr = string
+    az   = string
+  }))
+}

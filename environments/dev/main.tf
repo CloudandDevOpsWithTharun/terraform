@@ -10,4 +10,53 @@ module "vpc" {
     "ap-southeast-1b",
     "ap-southeast-1c"
   ]
+    public_subnets = {
+    public-a = {
+      cidr = "10.0.1.0/24"
+      az   = "ap-southeast-1a"
+    }
+
+    public-b = {
+      cidr = "10.0.2.0/24"
+      az   = "ap-southeast-1b"
+    }
+
+    public-c = {
+      cidr = "10.0.3.0/24"
+      az   = "ap-southeast-1c"
+    }
+  }
+    private_subnets = {
+    private-a = {
+      cidr = "10.0.11.0/24"
+      az   = "ap-southeast-1a"
+    }
+
+    private-b = {
+      cidr = "10.0.12.0/24"
+      az   = "ap-southeast-1b"
+    }
+
+    private-c = {
+      cidr = "10.0.13.0/24"
+      az   = "ap-southeast-1c"
+    }
+  }
+
+    pod_subnets = {
+    pod-a = {
+      cidr = "100.64.1.0/24"
+      az   = "ap-southeast-1a"
+    }
+
+    pod-b = {
+      cidr = "100.64.2.0/24"
+      az   = "ap-southeast-1b"
+    }
+
+    pod-c = {
+      cidr = "100.64.3.0/24"
+      az   = "ap-southeast-1c"
+    }
+  }
 }
