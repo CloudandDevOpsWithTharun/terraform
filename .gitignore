@@ -1,3 +1,7 @@
 .terraform/
 *.tfstate
 *.tfstate.*
+tharun_accessKeys.csv
+*.csv
+.env
+.kube/

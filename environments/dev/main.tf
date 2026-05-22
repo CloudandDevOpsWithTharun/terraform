@@ -78,7 +78,16 @@ module "eks" {
   private_subnet_ids = module.vpc.private_subnet_ids
 
   cluster_role_arn = module.iam.eks_cluster_role_arn
-# cluster_policy_attachment_dependency = module.iam.eks_cluster_policy_attachment
+
+  node_role_arn = module.iam.node_role_arn
+  # cluster_policy_attachment_dependency = module.iam.eks_cluster_policy_attachment
 
   depends_on = [module.iam]
+}
+
+module "addons" {
+  source = "../../modules/addons"
+
+  cluster_name = "prime360novac-1"
+  depends_on = [module.eks]
 }

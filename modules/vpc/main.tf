@@ -22,6 +22,10 @@ resource "aws_subnet" "public"{
         Name=each.key
         Type="public"
         "kubernetes.io/role/elb" = "1"
+          
+
+  # Marks subnet as usable by this EKS cluster
+  "kubernetes.io/cluster/prime360novac-1" = "shared"
     }
 }
 resource "aws_internet_gateway" "this" {
@@ -63,6 +67,11 @@ resource "aws_subnet" "private"{
     Name=each.key
     Type="private"
     "kubernetes.io/role/internal-elb" = "1"
+      # Allows Karpenter to discover node-capable subnets
+  "karpenter.sh/discovery" = "prime360novac-1"
+
+  # Marks subnet as usable by this EKS cluster
+  "kubernetes.io/cluster/prime360novac-1" = "shared"
   }
 
 
