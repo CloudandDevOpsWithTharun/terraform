@@ -78,7 +78,8 @@ module "eks" {
   private_subnet_ids = module.vpc.private_subnet_ids
 
   cluster_role_arn = module.iam.eks_cluster_role_arn
-# cluster_policy_attachment_dependency = module.iam.eks_cluster_policy_attachment
+  # cluster_policy_attachment_dependency = module.iam.eks_cluster_policy_attachment
 
-  depends_on = [module.iam]
+  depends_on    = [module.iam]
+  node_role_arn = module.iam.node_role_arn
 }
