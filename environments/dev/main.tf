@@ -86,8 +86,8 @@ module "eks" {
 }
 
 module "addons" {
-  source = "../../modules/addons"
-
-  cluster_name = "prime360novac-1"
-  depends_on = [module.eks]
+  source           = "../../modules/addons"
+  vpc_cni_role_arn = module.iam.vpc_cni_role_arn
+  cluster_name     = "prime360novac-1"
+  depends_on       = [module.eks, module.iam]
 }

@@ -12,21 +12,19 @@ resource "aws_vpc_ipv4_cidr_block_association" "secondary" {
   vpc_id     = aws_vpc.this.id
   cidr_block = var.secondary_cidr
 }
-resource "aws_subnet" "public"{
-    for_each= var.public_subnets
-    vpc_id=aws_vpc.this.id
-    cidr_block=each.value.cidr
-    availability_zone=each.value.az
-    map_public_ip_on_launch = true
-    tags={
-        Name=each.key
-        Type="public"
-        "kubernetes.io/role/elb" = "1"
-          
-
-  # Marks subnet as usable by this EKS cluster
-  "kubernetes.io/cluster/prime360novac-1" = "shared"
-    }
+resource "aws_subnet" "public" {
+  for_each                = var.public_subnets
+  vpc_id                  = aws_vpc.this.id
+  cidr_block              = each.value.cidr
+  availability_zone       = each.value.az
+  map_public_ip_on_launch = true
+  tags = {
+    Name                     = each.key
+    Type                     = "public"
+    "kubernetes.io/role/elb" = "1"
+    # Marks subnet as usable by this EKS cluster
+    "kubernetes.io/cluster/prime360novac-1" = "shared"
+  }
 }
 resource "aws_internet_gateway" "this" {
 
@@ -58,20 +56,19 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public.id
 }
 
-resource "aws_subnet" "private"{
-  for_each=var.private_subnets
-  vpc_id=aws_vpc.this.id
-  cidr_block=each.value.cidr
-  availability_zone=each.value.az
-  tags={
-    Name=each.key
-    Type="private"
+resource "aws_subnet" "private" {
+  for_each          = var.private_subnets
+  vpc_id            = aws_vpc.this.id
+  cidr_block        = each.value.cidr
+  availability_zone = each.value.az
+  tags = {
+    Name                              = each.key
+    Type                              = "private"
     "kubernetes.io/role/internal-elb" = "1"
-      # Allows Karpenter to discover node-capable subnets
-  "karpenter.sh/discovery" = "prime360novac-1"
-
-  # Marks subnet as usable by this EKS cluster
-  "kubernetes.io/cluster/prime360novac-1" = "shared"
+    # Allows Karpenter to discover node-capable subnets
+    "karpenter.sh/discovery" = "prime360novac-1"
+    # Marks subnet as usable by this EKS cluster
+    "kubernetes.io/cluster/prime360novac-1" = "shared"
   }
 
 
@@ -80,9 +77,9 @@ resource "aws_route_table" "private" {
 
   vpc_id = aws_vpc.this.id
   route {
-  cidr_block     = "0.0.0.0/0"
-  nat_gateway_id = aws_nat_gateway.this.id
-}
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.this.id
+  }
   tags = {
     Name = "${var.environment}-private-rt"
   }

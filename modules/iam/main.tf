@@ -48,12 +48,39 @@ resource "aws_iam_role_policy_attachment" "worker_node" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
 }
 
-resource "aws_iam_role_policy_attachment" "cni_policy" {
-  role       = aws_iam_role.node_group.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-}
+
 
 resource "aws_iam_role_policy_attachment" "ecr_read" {
   role       = aws_iam_role.node_group.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
+
+
+
+# ──────────────────────────────────────────────
+# Node role — CNI policy REMOVED from here
+# CNI now runs under its own Pod Identity role
+# ──────────────────────────────────────────────
+
+resource "aws_iam_role" "vpc_cni" {
+  name = "${var.cluster_name}-vpc-cni-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Service = "pods.eks.amazonaws.com" }
+      Action    = [
+        "sts:AssumeRole",
+        "sts:TagSession"   # required for Pod Identity — not needed for IRSA
+      ]
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "vpc_cni" {
+  role       = aws_iam_role.vpc_cni.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
+}
+
+
