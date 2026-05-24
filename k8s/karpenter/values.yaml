@@ -1,0 +1,67 @@
+# karpenter/values.yaml
+
+# ──────────────────────────────────────────────
+# Controller — HA production setup
+# 2 replicas spread across AZs
+# ──────────────────────────────────────────────
+replicas: 2
+
+podDisruptionBudget:
+  maxUnavailable: 1
+
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: DoNotSchedule
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/name: karpenter
+
+# ──────────────────────────────────────────────
+# Affinity — Karpenter must run on bootstrap nodes
+# never on nodes it provisions itself
+# ──────────────────────────────────────────────
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: karpenter.sh/nodepool
+              operator: DoesNotExist   # bootstrap nodes don't have this label
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - topologyKey: kubernetes.io/hostname  # 2 replicas on 2 different nodes
+
+tolerations:
+  - key: CriticalAddonsOnly
+    operator: Exists
+
+# ──────────────────────────────────────────────
+# Resources — sized for production
+# ──────────────────────────────────────────────
+resources:
+  requests:
+    cpu: 500m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi
+
+# ──────────────────────────────────────────────
+# Logging — structured JSON for log ingestion
+# ──────────────────────────────────────────────
+logLevel: info
+logEncoding: json
+
+# ──────────────────────────────────────────────
+# Metrics — flip to true if you add prometheus operator later
+# ──────────────────────────────────────────────
+serviceMonitor:
+  enabled: false
+
+# ──────────────────────────────────────────────
+# Pod Identity — no IRSA, no OIDC
+# association is created by install.sh
+# ──────────────────────────────────────────────
+podIdentity:
+  enabled: true
