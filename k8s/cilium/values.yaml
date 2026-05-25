@@ -1,0 +1,65 @@
+# cilium/values.yaml
+
+# ──────────────────────────────────────────────
+# CNI chaining mode — keeps AWS VPC CNI for IP management
+# Cilium handles policy, observability, kube-proxy replacement
+# ──────────────────────────────────────────────
+cni:
+  chainingMode: aws-cni
+  exclusive: false          # don't remove aws-node
+
+# ──────────────────────────────────────────────
+# kube-proxy replacement
+# API server details injected by install.sh at runtime
+# ──────────────────────────────────────────────
+kubeProxyReplacement: true
+
+k8sServiceHost: ""          # overridden in install.sh — do not hardcode
+k8sServicePort: "443"
+
+# ──────────────────────────────────────────────
+# Routing — tunnel disabled since VPC CNI handles routing
+# ──────────────────────────────────────────────
+tunnel: disabled
+routingMode: native
+ipv4NativeRoutingCIDR: "100.64.0.0/16"   # your pod secondary CIDR
+
+# ──────────────────────────────────────────────
+# Hubble — observability layer
+# ──────────────────────────────────────────────
+hubble:
+  enabled: true
+
+  relay:
+    enabled: true
+
+  ui:
+    enabled: true
+    service:
+      type: ClusterIP       # change to LoadBalancer if you want external access
+
+  metrics:
+    enabled:
+      - dns
+      - drop
+      - tcp
+      - flow
+      - icmp
+      - http
+
+# ──────────────────────────────────────────────
+# Operator
+# ──────────────────────────────────────────────
+operator:
+  replicas: 1               # 1 is fine for non-HA clusters
+
+# ──────────────────────────────────────────────
+# Resource limits — sized for t3.medium nodes
+# ──────────────────────────────────────────────
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

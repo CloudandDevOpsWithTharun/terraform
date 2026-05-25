@@ -8,3 +8,7 @@ output "node_role_arn" {
 output "eks_cluster_policy_attachment" {
   value = aws_iam_role_policy_attachment.eks_cluster.id
 }
+
+output "vpc_cni_role_arn" {
+  value = aws_iam_role.vpc_cni.arn
+}
