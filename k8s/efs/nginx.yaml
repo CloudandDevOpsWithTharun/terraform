@@ -1,0 +1,39 @@
+# nginx-efs.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: nginx-efs
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: nginx-efs
+
+  template:
+    metadata:
+      labels:
+        app: nginx-efs
+
+    spec:
+      containers:
+
+        - name: nginx
+
+          image: nginx:latest
+
+          ports:
+            - containerPort: 80
+
+          volumeMounts:
+            - name: efs-storage
+              mountPath: /usr/share/nginx/html
+
+      volumes:
+        - name: efs-storage
+
+          persistentVolumeClaim:
+            claimName: efs-pvc

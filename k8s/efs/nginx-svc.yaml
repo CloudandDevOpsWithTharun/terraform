@@ -1,0 +1,17 @@
+# nginx-service.yaml
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: nginx-efs-service
+
+spec:
+  type: LoadBalancer
+
+  selector:
+    app: nginx-efs
+
+  ports:
+    - port: 80
+      targetPort: 80

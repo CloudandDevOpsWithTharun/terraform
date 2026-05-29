@@ -4,7 +4,7 @@ set -euo pipefail
 CLUSTER_NAME="prime360novac-1"
 REGION="ap-southeast-1"
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-KARPENTER_VERSION="1.1.0"
+KARPENTER_VERSION="1.8.1"
 KARPENTER_NAMESPACE="karpenter"
 KARPENTER_ROLE_NAME="${CLUSTER_NAME}-karpenter-controller"
 INTERRUPTION_QUEUE="${CLUSTER_NAME}-karpenter-interruption"
@@ -246,19 +246,26 @@ aws eks create-pod-identity-association \
 echo ""
 echo "▶ Step 6/6 — Installing Karpenter via Helm..."
 
-helm repo add karpenter https://charts.karpenter.sh/ 2>/dev/null || true
+kubectl create namespace karpenter \
+  --dry-run=client -o yaml | kubectl apply -f -
 
-helm upgrade --install karpenter karpenter/karpenter \
-  --version "$KARPENTER_VERSION" \
-  --namespace "$KARPENTER_NAMESPACE" \
+CLUSTER_ENDPOINT=$(aws eks describe-cluster \
+  --name "$CLUSTER_NAME" \
+  --region "$REGION" \
+  --query "cluster.endpoint" \
+  --output text)
+
+helm upgrade --install karpenter \
+  oci://public.ecr.aws/karpenter/karpenter \
+  --version "${KARPENTER_VERSION}" \
+  --namespace "${KARPENTER_NAMESPACE}" \
+  --create-namespace \
   --values values.yaml \
   --set "settings.clusterName=${CLUSTER_NAME}" \
+  --set "settings.clusterEndpoint=${CLUSTER_ENDPOINT}" \
   --set "settings.interruptionQueue=${INTERRUPTION_QUEUE}" \
-  --skip-refresh \
   --wait \
-  --timeout 5m
-
-echo ""
+  --timeout 10m
 echo "▶ Applying NodePool and EC2NodeClass..."
 
 export CLUSTER_NAME NODE_ROLE_NAME
