@@ -1,0 +1,10 @@
+
+apiVersion: v1
+kind: ServiceAccount
+
+metadata:
+  name: app-sa
+  namespace: default
+
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::783764580882:role/app-irsa-role

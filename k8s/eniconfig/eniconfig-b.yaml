@@ -5,7 +5,7 @@ metadata:
   name: ap-southeast-1b
 
 spec:
-  subnet: subnet-0c5604294667387aa
+  subnet: subnet-004f0573fb93b3a6f
 
   securityGroups:
-    - sg-0561fbdbab54a8d20
+    - sg-0b133d918c99fd379

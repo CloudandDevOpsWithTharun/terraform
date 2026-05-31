@@ -12,3 +12,7 @@ output "eks_cluster_policy_attachment" {
 output "vpc_cni_role_arn" {
   value = aws_iam_role.vpc_cni.arn
 }
+
+output "efs_csi_role_arn" {
+  value = aws_iam_role.efs_csi.arn
+}

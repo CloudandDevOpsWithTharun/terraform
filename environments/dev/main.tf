@@ -88,5 +88,74 @@ module "addons" {
   source           = "../../modules/addons"
   vpc_cni_role_arn = module.iam.vpc_cni_role_arn
   cluster_name     = "prime360novac-1"
+  efs_csi_role_arn = module.iam.efs_csi_role_arn
   depends_on       = [module.eks, module.iam]
+}
+
+#===============
+module "kms" {
+
+  source = "../../modules/kms"
+
+  description = "RDS encryption key"
+
+  alias = "rds-prod-key"
+}
+
+module "RDS" {
+
+  source = "../../modules/RDS"
+
+  name = "prod-postgres"
+
+  vpc_id = module.vpc.vpc_id
+
+  private_subnet_ids = module.vpc.private_subnet_ids
+
+  kms_key_arn = module.kms.kms_key_arn
+
+  username = "postgres"
+
+  password = module.secrets.password
+
+  db_name = "appdb"
+}
+
+module "secrets" {
+
+  source = "../../modules/secrets-manager"
+
+  secret_name = "prod/app/postgres"
+
+  kms_key_arn = module.kms.kms_key_arn
+
+  username = "postgres"
+
+  db_name = "appdb"
+}
+
+module "app_iam" {
+
+  source = "../../modules/app-iam"
+
+  role_name = "app-secrets-role"
+
+  secret_arn = module.secrets.secret_arn
+
+  kms_key_arn = module.kms.kms_key_arn
+}
+#========================================
+module "efs" {
+
+  source = "../../modules/efs"
+
+  cluster_name = "prime360novac-1"
+
+  vpc_id = module.vpc.vpc_id
+
+  private_subnet_ids = module.vpc.private_subnet_ids
+
+  node_security_group_id = module.eks.cluster_sg
+
+  kms_key_id = module.kms.kms_key_arn
 }

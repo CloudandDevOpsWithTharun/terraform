@@ -1,39 +1,101 @@
-# nginx-efs.yaml
 
+# =========================================================
+# EFS STORAGE TEST DEPLOYMENT
+# =========================================================
 apiVersion: apps/v1
 kind: Deployment
 
 metadata:
-  name: nginx-efs
+  name: efs-storage-test
 
 spec:
   replicas: 2
 
   selector:
     matchLabels:
-      app: nginx-efs
+      app: efs-storage-test
 
   template:
     metadata:
       labels:
-        app: nginx-efs
+        app: efs-storage-test
 
     spec:
       containers:
 
-        - name: nginx
+      - name: storage-test
+        image: alpine:3.20
 
-          image: nginx:latest
+        command:
+          - /bin/sh
+          - -c
+          - |
+            apk add --no-cache \
+              nginx \
+              util-linux \
+              bash \
+              inotify-tools \
+              coreutils
 
-          ports:
-            - containerPort: 80
+            mkdir -p /data/html
 
-          volumeMounts:
-            - name: efs-storage
-              mountPath: /usr/share/nginx/html
+            echo "<h1>EFS STORAGE TEST</h1>" > /data/html/index.html
+
+            cat <<EOF > /data/test-info.txt
+
+            EFS TEST FEATURES
+            =================
+            flock      : supported
+            append     : supported
+            randomwrite: supported
+            symlink    : supported
+            inotify    : supported
+            chmod      : supported
+
+            EOF
+
+            nginx -p /tmp/nginx \
+              -c /etc/nginx/nginx.conf \
+              -g 'daemon off;'
+
+        ports:
+        - containerPort: 80
+
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+
+        volumeMounts:
+        - name: efs-volume
+          mountPath: /data
 
       volumes:
-        - name: efs-storage
+      - name: efs-volume
+        persistentVolumeClaim:
+          claimName: efs-pvc
 
-          persistentVolumeClaim:
-            claimName: efs-pvc
+---
+# =========================================================
+# EFS SERVICE
+# =========================================================
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: efs-storage-svc
+
+spec:
+  selector:
+    app: efs-storage-test
+
+  ports:
+  - port: 80
+    targetPort: 80
+
+  type: ClusterIP
+

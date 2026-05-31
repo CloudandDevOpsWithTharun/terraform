@@ -1,34 +1,107 @@
+
+# =========================================================
+# helm repo add awslabs https://awslabs.github.io/mountpoint-s3-csi-driver
+# helm repo update
+# helm install aws-mountpoint-s3-csi-driver \
+#   awslabs/aws-mountpoint-s3-csi-driver \
+#   -n kube-system
+# S3 STORAGE TEST DEPLOYMENT
+# =========================================================
 apiVersion: apps/v1
 kind: Deployment
 
 metadata:
-  name: nginx-s3
+  name: s3-storage-test
 
 spec:
   replicas: 2
 
   selector:
     matchLabels:
-      app: nginx-s3
+      app: s3-storage-test
 
   template:
     metadata:
       labels:
-        app: nginx-s3
+        app: s3-storage-test
 
     spec:
-      serviceAccountName: s3-csi-driver-sa
+      serviceAccountName: s3-app-sa
       containers:
-      - name: nginx
 
-        image: nginx
+      - name: storage-test
+        image: alpine:3.20
+
+        command:
+          - /bin/sh
+          - -c
+          - |
+            apk add --no-cache \
+              nginx \
+              util-linux \
+              bash \
+              inotify-tools \
+              coreutils
+
+            mkdir -p /data/html
+
+            echo "<h1>S3 MOUNTPOINT TEST</h1>" > /data/html/index.html || true
+
+            cat <<EOF > /data/test-info.txt || true
+
+            S3 TEST FEATURES
+            ================
+            flock      : NOT supported
+            append     : NOT supported
+            randomwrite: NOT supported
+            symlink    : NOT supported
+            inotify    : unreliable
+            chmod      : partial
+
+            EOF
+
+            nginx -p /tmp/nginx \
+              -c /etc/nginx/nginx.conf \
+              -g 'daemon off;'
+
+        ports:
+        - containerPort: 80
+
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
 
         volumeMounts:
-        - name: s3-storage
-          mountPath: /usr/share/nginx/html
+        - name: s3-volume
+          mountPath: /data
 
       volumes:
-      - name: s3-storage
-
+      - name: s3-volume
         persistentVolumeClaim:
           claimName: s3-pvc
+
+---
+# =========================================================
+# S3 SERVICE
+# =========================================================
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: s3-storage-svc
+
+spec:
+  selector:
+    app: s3-storage-test
+
+  ports:
+  - port: 80
+    targetPort: 80
+
+  type: ClusterIP
+

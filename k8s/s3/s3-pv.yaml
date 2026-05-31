@@ -22,7 +22,7 @@ spec:
   csi:
     driver: s3.csi.aws.com
 
-    volumeHandle: prime360novac-s3-test
+    volumeHandle: tharun-nginx-s3-demo
 
     volumeAttributes:
-      bucketName: prime360novac-s3-test
+      bucketName: tharun-nginx-s3-demo

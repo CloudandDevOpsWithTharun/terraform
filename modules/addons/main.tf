@@ -54,3 +54,41 @@ resource "aws_eks_pod_identity_association" "vpc_cni" {
     aws_eks_addon.pod_identity           # agent must exist before association
   ]
 }
+
+# ──────────────────────────────────────────────
+# EFS CSI Driver
+# Provides dynamic/static EFS volume provisioning
+# Managed by AWS EKS
+# ──────────────────────────────────────────────
+resource "aws_eks_addon" "efs_csi" {
+
+  cluster_name = var.cluster_name
+  addon_name   = "aws-efs-csi-driver"
+
+  resolve_conflicts_on_create = "OVERWRITE"
+  resolve_conflicts_on_update = "OVERWRITE"
+
+  depends_on = [
+    aws_eks_addon.pod_identity
+  ]
+}
+
+# ──────────────────────────────────────────────
+# EFS CSI Pod Identity Association
+# Maps EFS CSI service account → IAM role
+# ──────────────────────────────────────────────
+resource "aws_eks_pod_identity_association" "efs_csi" {
+
+  cluster_name = var.cluster_name
+
+  namespace = "kube-system"
+
+  service_account = "efs-csi-controller-sa"
+
+  role_arn = var.efs_csi_role_arn
+
+  depends_on = [
+    aws_eks_addon.pod_identity,
+    aws_eks_addon.efs_csi
+  ]
+}

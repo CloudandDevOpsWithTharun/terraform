@@ -2,22 +2,26 @@
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "BucketAccess",
+      "Sid": "AllowListBucket",
       "Effect": "Allow",
       "Action": [
         "s3:ListBucket"
       ],
-      "Resource": "arn:aws:s3:::prime360novac-s3-test"
+      "Resource": [
+        "arn:aws:s3:::tharun-nginx-s3-demo"
+      ]
     },
     {
-      "Sid": "ObjectAccess",
+      "Sid": "AllowObjectOperations",
       "Effect": "Allow",
       "Action": [
         "s3:GetObject",
         "s3:PutObject",
         "s3:DeleteObject"
       ],
-      "Resource": "arn:aws:s3:::prime360novac-s3-test/*"
+      "Resource": [
+        "arn:aws:s3:::tharun-nginx-s3-demo/*"
+      ]
     }
   ]
 }

@@ -18,14 +18,10 @@ API_SERVER=$(aws eks describe-cluster \
 
 echo "API Server: $API_SERVER"
 
-echo "──────────────────────────────────────────"
-echo " Removing kube-proxy daemonset..."
-echo " (Cilium will replace it)"
-echo "──────────────────────────────────────────"
+──────────────────────────────────────────"
 
 # kube-proxy addon removed from Terraform — but daemonset may still exist
 # safe to delete since Cilium takes over
-kubectl delete daemonset kube-proxy -n kube-system --ignore-not-found
 
 echo "──────────────────────────────────────────"
 echo " Adding Cilium Helm repo..."
@@ -59,6 +55,11 @@ kubectl rollout status deployment/hubble-ui -n kube-system
 echo ""
 echo "✅ Cilium installed successfully"
 echo ""
+kubectl delete daemonset kube-proxy -n kube-system --ignore-not-found
+echo "──────────────────────────────────────────"
+echo " Removing kube-proxy daemonset..."
+echo " (Cilium will replace it)"
+echo "
 echo "Access Hubble UI:"
 echo "  kubectl port-forward svc/hubble-ui -n kube-system 12000:80"
 echo "  then open http://localhost:12000"

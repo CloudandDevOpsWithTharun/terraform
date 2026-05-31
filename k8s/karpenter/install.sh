@@ -203,6 +203,7 @@ CONTROLLER_POLICY=$(cat <<EOF
       "Action": ["pricing:GetProducts"],
       "Resource": "*"
     }
+
   ]
 }
 EOF
